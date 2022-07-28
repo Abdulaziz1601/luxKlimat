@@ -360,6 +360,7 @@ p [style*='max-width'] {
 */
 .brand {
 	display: inline-block;
+	position: relative;
 }
 
 .brand .brand-logo-light {
@@ -370,7 +371,6 @@ p [style*='max-width'] {
 	display: block;
 }
 
-.brand {}
 
 .brand img {
 	display: inline-block;
