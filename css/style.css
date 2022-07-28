@@ -2119,6 +2119,11 @@ textarea.form-input {
 	.intro {
 		display: flex;
 	}
+
+	.rd-navbar-brand a {
+		width: 200px;
+	}
+
 }
 
 @media (min-width: 1200px) {
