@@ -525,7 +525,7 @@
 					.end();
 
 				s.swiper({
-					autoplay: !isNoviBuilder && $.isNumeric(s.attr('data-autoplay')) ? s.attr('data-autoplay') : false,
+					autoplay:false,
 					direction: s.attr('data-direction') ? s.attr('data-direction') : "horizontal",
 					effect: s.attr('data-slide-effect') ? s.attr('data-slide-effect') : "slide",
 					speed: s.attr('data-slide-speed') ? s.attr('data-slide-speed') : 600,

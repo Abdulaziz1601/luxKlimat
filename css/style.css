@@ -1031,6 +1031,10 @@ img {
 }
 
 @media (max-width: 991.98px) {
+	.brand span {
+		display: none;
+	}
+
 	.table-custom th {
 		padding-top: 20px;
 		padding-bottom: 20px;
@@ -2510,6 +2514,12 @@ textarea.form-input {
 	}
 }
 
+@media (max-width: 1200px) {
+	.brand span {
+		display: none;
+	}
+}
+
 .box-service .box-service-title:before {
 	content: '';
 	position: absolute;
@@ -2747,8 +2757,7 @@ textarea.form-input {
 
 @media (min-width: 576px) {
 	.contact {
-		background: url("../images/contact-bg-1920-933.jpg") no-repeat center center;
-		background-size: cover;
+		background: url("../images/contact.jpg") center center / cover no-repeat;
 	}
 }
 
@@ -5526,3 +5535,19 @@ html.rd-navbar-fixed-linked .page {
 /*
 * Counter
 */
+.swiper-slide-caption {
+	/* From https://css.glass */
+	background: rgba(0, 0, 0, 0.2);
+	border-radius: 16px;
+	box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+	backdrop-filter: blur(5px);
+	-webkit-backdrop-filter: blur(5px);
+	/* From https://css.glass */
+	background: rgba(0, 0, 0, 0.2);
+	border-radius: 16px;
+	box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+	backdrop-filter: blur(5px);
+	-webkit-backdrop-filter: blur(5px);
+	padding: 40px;
+	margin-right: 30px;
+}
