@@ -109,6 +109,141 @@
 		}
 	});
 
+	// Telegram Bot Integration
+	function sendToTelegramBot(formData, formType) {
+		// Telegram Bot Configuration
+		const BOT_TOKEN = '7585922085:AAGNv_nYCCiNF4xv8H4lwJxaJC-y0QzPYgc'; // Replace with your bot token
+		const CHAT_ID = '7083192127'; // Replace with your chat ID
+
+		// Format message based on form type
+		let message = '';
+		if (formType === 'contact') {
+			message = `🆕 *Yangi Murojaat*\n\n`;
+			message += `👤 *Ism:* ${formData.name}\n`;
+			message += `📞 *Telefon:* ${formData.phone}\n`;
+			if (formData.email) {
+				message += `📧 *Email:* ${formData.email}\n`;
+			}
+			message += `\n⏰ *Vaqt:* ${new Date().toLocaleString('uz-UZ')}\n`;
+			message += `🌐 *Sahifa:* ${window.location.href}`;
+		} else if (formType === 'consultation') {
+			message = `💼 *Yangi Maslahat So'rovi*\n\n`;
+			message += `👤 *Ism:* ${formData.name}\n`;
+			message += `📞 *Telefon:* ${formData.phone}\n`;
+			if (formData.email) {
+				message += `📧 *Email:* ${formData.email}\n`;
+			}
+			message += `\n⏰ *Vaqt:* ${new Date().toLocaleString('uz-UZ')}\n`;
+			message += `🌐 *Sahifa:* ${window.location.href}`;
+		}
+
+		// Send to Telegram Bot API
+		const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+		const telegramData = {
+			chat_id: CHAT_ID,
+			text: message,
+			parse_mode: 'Markdown'
+		};
+
+		$.ajax({
+			url: telegramUrl,
+			method: 'POST',
+			data: telegramData,
+			success: function(response) {
+				if (response.ok) {
+					// Show success message
+					showNotification('Murojaatingiz muvaffaqiyatli yuborildi!', 'success');
+				} else {
+					// Show error message
+					showNotification('Xatolik yuz berdi. Iltimos qaytadan urinib ko\'ring.', 'error');
+				}
+			},
+			error: function() {
+				// Show error message
+				showNotification('Xatolik yuz berdi. Iltimos qaytadan urinib ko\'ring.', 'error');
+			}
+		});
+	}
+
+	// Notification function
+	function showNotification(message, type) {
+		const notification = $(`
+			<div class="notification notification-${type}">
+				<div class="notification-content">
+					<span class="notification-message">${message}</span>
+					<button class="notification-close">&times;</button>
+				</div>
+			</div>
+		`);
+
+		// Add notification styles if not exists
+		if (!$('#notification-styles').length) {
+			$('head').append(`
+				<style id="notification-styles">
+					.notification {
+						position: fixed;
+						top: 20px;
+						right: 20px;
+						z-index: 10000;
+						padding: 15px 20px;
+						border-radius: 5px;
+						color: white;
+						font-weight: 500;
+						max-width: 400px;
+						box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+						transform: translateX(100%);
+						transition: transform 0.3s ease;
+					}
+					.notification.show {
+						transform: translateX(0);
+					}
+					.notification-success {
+						background-color: #28a745;
+					}
+					.notification-error {
+						background-color: #dc3545;
+					}
+					.notification-content {
+						display: flex;
+						align-items: center;
+						justify-content: space-between;
+					}
+					.notification-close {
+						background: none;
+						border: none;
+						color: white;
+						font-size: 20px;
+						cursor: pointer;
+						margin-left: 10px;
+					}
+				</style>
+			`);
+		}
+
+		$('body').append(notification);
+
+		// Show notification
+		setTimeout(() => {
+			notification.addClass('show');
+		}, 100);
+
+		// Auto hide after 5 seconds
+		setTimeout(() => {
+			notification.removeClass('show');
+			setTimeout(() => {
+				notification.remove();
+			}, 300);
+		}, 5000);
+
+		// Close button
+		notification.find('.notification-close').on('click', function() {
+			notification.removeClass('show');
+			setTimeout(() => {
+				notification.remove();
+			}, 300);
+		});
+	}
+
 	// Initialize scripts that require a finished document
 	$(function () {
 		isNoviBuilder = window.xMode;
@@ -551,150 +686,70 @@
 			attachFormValidator(plugins.regula);
 		}
 
-		// RD Mailform
+		// Telegram Bot Form Handler
 		if (plugins.rdMailForm.length) {
-			var i, j, k,
-				msg = {
-					'MF000': 'Successfully sent!',
-					'MF001': 'Recipients are not set!',
-					'MF002': 'Form will not work locally!',
-					'MF003': 'Please, define email field in your form!',
-					'MF004': 'Please, define type of your form!',
-					'MF254': 'Something went wrong with PHPMailer!',
-					'MF255': 'Aw, snap! Something went wrong.'
-				};
+			for (var i = 0; i < plugins.rdMailForm.length; i++) {
+				var $form = $(plugins.rdMailForm[i]);
 
-			for (i = 0; i < plugins.rdMailForm.length; i++) {
-				var $form = $(plugins.rdMailForm[i]),
-					formHasCaptcha = false;
+				$form.on('submit', function(e) {
+					e.preventDefault();
 
-				$form.attr('novalidate', 'novalidate').ajaxForm({
-					data: {
-						"form-type": $form.attr("data-form-type") || "contact",
-						"counter": i
-					},
-					beforeSubmit: function (arr, $form, options) {
-						if (isNoviBuilder)
-							return;
+					if (isNoviBuilder) return;
 
-						var form = $(plugins.rdMailForm[this.extraData.counter]),
-							inputs = form.find("[data-constraints]"),
-							output = $("#" + form.attr("data-form-output")),
-							captcha = form.find('.recaptcha'),
-							captchaFlag = true;
+					var form = $(this),
+						inputs = form.find("[data-constraints]"),
+						output = $("#" + form.attr("data-form-output")),
+						formType = form.attr("data-form-type") || "contact";
 
-						output.removeClass("active error success");
+					output.removeClass("active error success");
 
-						if (isValidated(inputs, captcha)) {
+					if (isValidated(inputs)) {
+						form.addClass('form-in-process');
 
-							// veify reCaptcha
-							if (captcha.length) {
-								var captchaToken = captcha.find('.g-recaptcha-response').val(),
-									captchaMsg = {
-										'CPT001': 'Please, setup you "site key" and "secret key" of reCaptcha',
-										'CPT002': 'Something wrong with google reCaptcha'
-									};
-
-								formHasCaptcha = true;
-
-								$.ajax({
-									method: "POST",
-									url: "bat/reCaptcha.php",
-									data: { 'g-recaptcha-response': captchaToken },
-									async: false
-								})
-									.done(function (responceCode) {
-										if (responceCode !== 'CPT000') {
-											if (output.hasClass("snackbars")) {
-												output.html('<p><span class="icon text-middle mdi mdi-check icon-xxs"></span><span>' + captchaMsg[responceCode] + '</span></p>')
-
-												setTimeout(function () {
-													output.removeClass("active");
-												}, 3500);
-
-												captchaFlag = false;
-											} else {
-												output.html(captchaMsg[responceCode]);
-											}
-
-											output.addClass("active");
-										}
-									});
-							}
-
-							if (!captchaFlag) {
-								return false;
-							}
-
-							form.addClass('form-in-process');
-
-							if (output.hasClass("snackbars")) {
-								output.html('<p><span class="icon text-middle fa fa-circle-o-notch fa-spin icon-xxs"></span><span>Sending</span></p>');
-								output.addClass("active");
-							}
-						} else {
-							return false;
+						// Show sending message
+						if (output.hasClass("snackbars")) {
+							output.html('<p><span class="icon text-middle fa fa-circle-o-notch fa-spin icon-xxs"></span><span>Yuborilmoqda...</span></p>');
+							output.addClass("active");
 						}
-					},
-					error: function (result) {
-						if (isNoviBuilder)
-							return;
 
-						var output = $("#" + $(plugins.rdMailForm[this.extraData.counter]).attr("data-form-output")),
-							form = $(plugins.rdMailForm[this.extraData.counter]);
+						// Collect form data
+						var formData = {};
+						form.find('input, textarea, select').each(function() {
+							var $input = $(this);
+							if ($input.attr('name') && $input.val()) {
+								formData[$input.attr('name')] = $input.val();
+							}
+						});
 
-						output.text(msg[result]);
+						// Send to Telegram Bot
+						sendToTelegramBot(formData, formType);
+
+						// Clear form
+						form.clearForm();
+						form.find('input, textarea').trigger('blur');
 						form.removeClass('form-in-process');
 
-						if (formHasCaptcha) {
-							grecaptcha.reset();
-						}
-					},
-					success: function (result) {
-						if (isNoviBuilder)
-							return;
-
-						var form = $(plugins.rdMailForm[this.extraData.counter]),
-							output = $("#" + form.attr("data-form-output")),
-							select = form.find('select');
-
-						form
-							.addClass('success')
-							.removeClass('form-in-process');
-
-						if (formHasCaptcha) {
-							grecaptcha.reset();
-						}
-
-						result = result.length === 5 ? result : 'MF255';
-						output.text(msg[result]);
-
-						if (result === "MF000") {
-							if (output.hasClass("snackbars")) {
-								output.html('<p><span class="icon text-middle mdi mdi-check icon-xxs"></span><span>' + msg[result] + '</span></p>');
-							} else {
-								output.addClass("active success");
-							}
+						// Show success message
+						if (output.hasClass("snackbars")) {
+							output.html('<p><span class="icon text-middle mdi mdi-check icon-xxs"></span><span>Muvaffaqiyatli yuborildi!</span></p>');
+							output.addClass("active");
 						} else {
-							if (output.hasClass("snackbars")) {
-								output.html(' <p class="snackbars-left"><span class="icon icon-xxs mdi mdi-alert-outline text-middle"></span><span>' + msg[result] + '</span></p>');
-							} else {
-								output.addClass("active error");
-							}
+							output.addClass("active success");
 						}
 
-						form.clearForm();
-
-						if (select.length) {
-							select.select2("val", "");
-						}
-
-						form.find('input, textarea').trigger('blur');
-
+						// Hide message after 3.5 seconds
 						setTimeout(function () {
 							output.removeClass("active error success");
-							form.removeClass('success');
 						}, 3500);
+
+					} else {
+						// Show validation error
+						if (output.hasClass("snackbars")) {
+							output.html('<p class="snackbars-left"><span class="icon icon-xxs mdi mdi-alert-outline text-middle"></span><span>Iltimos barcha maydonlarni to\'ldiring</span></p>');
+							output.addClass("active");
+						} else {
+							output.addClass("active error");
+						}
 					}
 				});
 			}
