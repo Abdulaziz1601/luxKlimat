@@ -113,7 +113,10 @@
 	function sendToTelegramBot(formData, formType) {
 		// Telegram Bot Configuration
 		const BOT_TOKEN = '7585922085:AAGNv_nYCCiNF4xv8H4lwJxaJC-y0QzPYgc'; // Replace with your bot token
-		const CHAT_ID = '7083192127'; // Replace with your chat ID
+		const CHAT_IDS = [
+			'7083192127', // Your chat ID
+			'890513834' // Add the second person's chat ID here
+		];
 
 		// Format message based on form type
 		let message = '';
@@ -137,31 +140,37 @@
 			message += `🌐 *Sahifa:* ${window.location.href}`;
 		}
 
-		// Send to Telegram Bot API
-		const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-		const telegramData = {
-			chat_id: CHAT_ID,
-			text: message,
-			parse_mode: 'Markdown'
-		};
+		// Send to all chat IDs
+		let successCount = 0;
+		let totalChats = CHAT_IDS.length;
 
-		$.ajax({
-			url: telegramUrl,
-			method: 'POST',
-			data: telegramData,
-			success: function(response) {
-				if (response.ok) {
-					// Show success message
-					showNotification('Murojaatingiz muvaffaqiyatli yuborildi!', 'success');
-				} else {
-					// Show error message
-					showNotification('Xatolik yuz berdi. Iltimos qaytadan urinib ko\'ring.', 'error');
+		CHAT_IDS.forEach(function(chatId) {
+			const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+			const telegramData = {
+				chat_id: chatId,
+				text: message,
+				parse_mode: 'Markdown'
+			};
+
+			$.ajax({
+				url: telegramUrl,
+				method: 'POST',
+				data: telegramData,
+				success: function(response) {
+					successCount++;
+					if (successCount === totalChats) {
+						// All messages sent successfully
+						showNotification('Murojaatingiz muvaffaqiyatli yuborildi!', 'success');
+					}
+				},
+				error: function() {
+					successCount++;
+					if (successCount === totalChats) {
+						// At least one message failed
+						showNotification('Xatolik yuz berdi. Iltimos qaytadan urinib ko\'ring.', 'error');
+					}
 				}
-			},
-			error: function() {
-				// Show error message
-				showNotification('Xatolik yuz berdi. Iltimos qaytadan urinib ko\'ring.', 'error');
-			}
+			});
 		});
 	}
 
